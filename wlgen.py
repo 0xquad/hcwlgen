@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 #
 # Hashcat-like wordlist generator.
-# Usage: ./wlgen.py [-1 charset1 -2 ... -9 charset9] pattern > dict.txt
-# Patterns recognized:
+# Usage: ./wlgen.py [-1 charset1 -2 ... -9 charset9] [-H] [pattern|-i file]
+# Built-in character sets:
 # ?a = lowercase alpha ascii
 # ?A = uppercase alpha ascii
 # ?0 = digits 0-9
 # ?. = punctuation symbols
 # ?x = lowercase hex digits
+# ?X = uppercase hex digits
 # ?1 through ?9 = user character sets
+# Hashcat pattern format can be used instead with the -H option.
+# Built-in charsets can be specified in user character sets too.
 #
 # Copyright (c) 2020, Alexandre Hamelin <alexandre.hamelin gmail.com>
 # Licensed under the MIT License
@@ -18,8 +21,8 @@ import string
 import getopt
 from itertools import product
 
-# This works by generating a list of generators, for each character position,
-# such that [<generator1>, <generator2, ...] is then fed to itertools.product()
+# This works by generating a list of iterables, for each character position,
+# such that [<iterable1>, <iterable2>, ...] is then fed to itertools.product()
 # to create the wordlist.
 
 def translate_charset(code, options):
