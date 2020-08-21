@@ -22,16 +22,19 @@ from itertools import product
 # such that [<generator1>, <generator2, ...] is then fed to itertools.product()
 # to create the wordlist.
 
-def translate_charset(code, custom_charsets=[]):
+def translate_charset(code, options):
+    hc = options['hashcat_fmt']
     classes = {
         '?' : '?',
-        'a' : string.ascii_lowercase,
-        'A' : string.ascii_uppercase,
-        '0' : string.digits,
-        '.' : string.punctuation,
-        'x' : string.digits + 'abcdef',
-        'X' : string.digits + 'ABCDEF',
+        'l' if hc else 'a' : string.ascii_lowercase,
+        'u' if hc else 'A' : string.ascii_uppercase,
+        'd' if hc else '0' : string.digits,
+        's' if hc else '.' : ' ' + string.punctuation if hc else string.punctuation,
+        'h' if hc else 'x' : string.digits + 'abcdef',
+        'H' if hc else 'X' : string.digits + 'ABCDEF',
     }
+    if hc:
+        classes['a'] = classes['l'] + classes['u'] + classes['d'] + classes['s']
     return classes.get(code, None)
 
 
@@ -43,7 +46,7 @@ def parse_pattern(pattern, options, custom=True):
             esc = True
             continue
         if esc:
-            charset = translate_charset(c)
+            charset = translate_charset(c, options)
             if charset:
                 charset_list.append(charset)
             # Handle user character sets -1 through -9
@@ -62,14 +65,16 @@ def parse_pattern(pattern, options, custom=True):
     return charset_list
 
 if __name__ == '__main__':
-    opts, args = getopt.getopt(sys.argv[1:], '1:2:3:4:5:6:7:8:9:i:')
+    opts, args = getopt.getopt(sys.argv[1:], '1:2:3:4:5:6:7:8:9:i:H')
     options = {
         'user_charsets' : {},
         'input_file' : None,
+        'hashcat_fmt' : False,
     }
     for opt, arg in opts:
         if opt[1] in string.digits: options['user_charsets'][opt[1]] = arg
         elif opt == '-i': options['input_file'] = arg
+        elif opt == '-H': options['hashcat_fmt'] = True
 
     patterns = args
     if options['input_file']:
