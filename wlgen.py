@@ -22,31 +22,49 @@ from itertools import product
 # such that [<generator1>, <generator2, ...] is then fed to itertools.product()
 # to create the wordlist.
 
-def parse_pattern(pattern, options):
-    gens = []   # list of generators
+def translate_charset(code, custom_charsets=[]):
+    classes = {
+        '?' : '?',
+        'a' : string.ascii_lowercase,
+        'A' : string.ascii_uppercase,
+        '0' : string.digits,
+        '.' : string.punctuation,
+        'x' : '012345678abcdef',
+        'X' : '012345678ABCDEF',
+    }
+    return classes.get(code, None)
+
+
+def parse_pattern(pattern, options, custom=True):
+    charset_list = []   # list of possible character sets for each position
     esc = False
     for c in pattern:
         if not esc and c == '?':
             esc = True
+            continue
+        if esc:
+            charset = translate_charset(c)
+            if charset:
+                charset_list.append(charset)
+            # Handle user character sets -1 through -9
+            elif custom and c in '123456789':
+                charset_pattern = options['user_charsets'][int(c)-1]
+                # Expand the pattern to recognize built-in charsets.
+                # Remove duplicates and flatten the lists to a string.
+                expanded_charset = ''.join(sorted(set(
+                    map(lambda p: ''.join(str(e) for e in iter(p)),
+                        parse_pattern(charset_pattern, options, False))
+                )))
+                charset_list.append(expanded_charset)
         else:
-            if esc:
-                if c == '?': gens.append((a for a in '?'))
-                elif c == 'a': gens.append((a for a in string.ascii_lowercase))
-                elif c == 'A': gens.append((a for a in string.ascii_uppercase))
-                elif c == '0': gens.append((a for a in string.digits))
-                elif c == '.': gens.append((a for a in string.punctuation))
-                elif c == 'x': gens.append((a for a in set(string.hexdigits.lower())))
-                # Handle user character sets -1 through -9
-                elif c in string.digits: gens.append((a for a in options['user_charsets'][int(c)-1]))
-            else:
-                gens.append((a for a in c))
-            esc = False
-    return gens
+            charset_list.append(c)
+        esc = False
+    return charset_list
 
 if __name__ == '__main__':
     opts, args = getopt.getopt(sys.argv[1:], '1:2:3:4:5:6:7:8:9:')
     options = {}
-    options['user_charsets'] = [tuple(sorted(set(arg))) for opt, arg in opts]
-    gens = parse_pattern(args[0], options)
-    for word in map(''.join, product(*gens)):
+    options['user_charsets'] = [arg for opt, arg in opts]
+    charsets = parse_pattern(args[0], options)
+    for word in map(''.join, product(*charsets)):
         print(word)
