@@ -103,7 +103,9 @@ if __name__ == '__main__':
         with open(options['input_file'], 'r') as inputfile:
             patterns = inputfile.read().splitlines()
             for line in patterns[:]:
-                if line[0] in '123456789' and line[1] == '=':
+                if line.strip() == '' or line.strip()[0] == '#':
+                    patterns.remove(line)
+                elif line[0] in '123456789' and line[1] == '=':
                     options['user_charsets'][line[0]] = line[2:]
                     patterns.remove(line)
 

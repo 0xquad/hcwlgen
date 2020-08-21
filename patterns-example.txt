@@ -1,6 +1,13 @@
+# Define four custom character sets. These correspond
+# to the -1 to -4 command line switches.
+
 1= +-_*&
 2=2468
 3=a4
 4=eE3
+
+# Define two different patterns for word generation
+# that use the custom charsets above.
+
 happy?1new?1year201?2
 h?3ppyn?4wy?3?3r
