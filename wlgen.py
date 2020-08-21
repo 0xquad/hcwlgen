@@ -22,7 +22,7 @@ from itertools import product
 # such that [<generator1>, <generator2, ...] is then fed to itertools.product()
 # to create the wordlist.
 
-def parse_pattern(pattern):
+def parse_pattern(pattern, options):
     gens = []   # list of generators
     esc = False
     for c in pattern:
@@ -37,15 +37,16 @@ def parse_pattern(pattern):
                 elif c == '.': gens.append((a for a in string.punctuation))
                 elif c == 'x': gens.append((a for a in set(string.hexdigits.lower())))
                 # Handle user character sets -1 through -9
-                elif c in string.digits: gens.append((a for a in user_charsets[int(c)-1]))
+                elif c in string.digits: gens.append((a for a in options['user_charsets'][int(c)-1]))
             else:
                 gens.append((a for a in c))
             esc = False
     return gens
 
 if __name__ == '__main__':
-    options, args = getopt.getopt(sys.argv[1:], '1:2:3:4:5:6:7:8:9:')
-    user_charsets = [tuple(sorted(set(arg))) for opt, arg in options]
-    gens = parse_pattern(args[0])
+    opts, args = getopt.getopt(sys.argv[1:], '1:2:3:4:5:6:7:8:9:')
+    options = {}
+    options['user_charsets'] = [tuple(sorted(set(arg))) for opt, arg in opts]
+    gens = parse_pattern(args[0], options)
     for word in map(''.join, product(*gens)):
         print(word)
