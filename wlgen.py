@@ -48,7 +48,7 @@ def parse_pattern(pattern, options, custom=True):
                 charset_list.append(charset)
             # Handle user character sets -1 through -9
             elif custom and c in '123456789':
-                charset_pattern = options['user_charsets'][int(c)-1]
+                charset_pattern = options['user_charsets'][c]
                 # Expand the pattern to recognize built-in charsets.
                 # Remove duplicates and flatten the lists to a string.
                 expanded_charset = ''.join(sorted(set(
@@ -62,9 +62,21 @@ def parse_pattern(pattern, options, custom=True):
     return charset_list
 
 if __name__ == '__main__':
-    opts, args = getopt.getopt(sys.argv[1:], '1:2:3:4:5:6:7:8:9:')
-    options = {}
-    options['user_charsets'] = [arg for opt, arg in opts]
-    charsets = parse_pattern(args[0], options)
-    for word in map(''.join, product(*charsets)):
-        print(word)
+    opts, args = getopt.getopt(sys.argv[1:], '1:2:3:4:5:6:7:8:9:i:')
+    options = {
+        'user_charsets' : {},
+        'input_file' : None,
+    }
+    for opt, arg in opts:
+        if opt[1] in string.digits: options['user_charsets'][opt[1]] = arg
+        elif opt == '-i': options['input_file'] = arg
+
+    patterns = args
+    if options['input_file']:
+        with open(options['input_file'], 'r') as inputfile:
+            patterns = inputfile.read().splitlines()
+
+    for p in patterns:
+        charsets = parse_pattern(p, options)
+        for word in map(''.join, product(*charsets)):
+            print(word)
