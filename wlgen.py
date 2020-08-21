@@ -10,7 +10,7 @@
 # ?x = lowercase hex digits
 # ?X = uppercase hex digits
 # ?1 through ?9 = user character sets
-# Hashcat pattern format can be used instead with the -H option.
+# Hashcat pattern format can be used instead with the -H option (except ?b).
 # Built-in charsets can be specified in user character sets too.
 #
 # Copyright (c) 2020, Alexandre Hamelin <alexandre.hamelin gmail.com>
@@ -67,6 +67,13 @@ def parse_pattern(pattern, options, custom=True):
         esc = False
     return charset_list
 
+
+def generate_dict(patterns, options):
+    for p in patterns:
+        charsets = parse_pattern(p, options)
+        yield from map(''.join, product(*charsets))
+
+
 if __name__ == '__main__':
     opts, args = getopt.getopt(sys.argv[1:], '1:2:3:4:5:6:7:8:9:i:H')
     options = {
@@ -83,8 +90,10 @@ if __name__ == '__main__':
     if options['input_file']:
         with open(options['input_file'], 'r') as inputfile:
             patterns = inputfile.read().splitlines()
+            for line in patterns[:]:
+                if line[0] in '123456789' and line[1] == '=':
+                    options['user_charsets'][line[0]] = line[2:]
+                    patterns.remove(line)
 
-    for p in patterns:
-        charsets = parse_pattern(p, options)
-        for word in map(''.join, product(*charsets)):
-            print(word)
+    for word in generate_dict(patterns, options):
+        print(word)
