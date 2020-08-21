@@ -1,17 +1,29 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
-# Hashcat-like wordlist generator.
+# Hashcat-like wordlist generator in Python.
+#
 # Usage: ./wlgen.py [-1 charset1 -2 ... -9 charset9] [-H] [pattern|-i file]
+#
 # Built-in character sets:
-# ?a = lowercase alpha ascii
-# ?A = uppercase alpha ascii
-# ?0 = digits 0-9
-# ?. = punctuation symbols
-# ?x = lowercase hex digits
-# ?X = uppercase hex digits
-# ?1 through ?9 = user character sets
-# Hashcat pattern format can be used instead with the -H option (except ?b).
-# Built-in charsets can be specified in user character sets too.
+#   ?a = lowercase alpha ascii
+#   ?A = uppercase alpha ascii
+#   ?0 = digits 0-9
+#   ?. = punctuation symbols
+#   ?x = lowercase hex digits
+#   ?X = uppercase hex digits
+#   ?1 through ?9 = user character sets (-1 to -9 cmdline options)
+#
+# Hashcat pattern format can be used instead with the -H option (?l ?u ?d ?s ?h
+# ?H except ?b). Built-in charsets can be specified in user character sets too.
+#
+# Patterns can be specified in a pattern file, one pattern per line. Custom
+# character sets may be included in the pattern file with lines in the format
+# 1=abcd, e.g.
+#
+#   1=!%*
+#   password?1
+#
+# would generate three words: password!, password%, password*
 #
 # Copyright (c) 2020, Alexandre Hamelin <alexandre.hamelin gmail.com>
 # Licensed under the MIT License
