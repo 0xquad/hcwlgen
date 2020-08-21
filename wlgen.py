@@ -29,8 +29,8 @@ def translate_charset(code, custom_charsets=[]):
         'A' : string.ascii_uppercase,
         '0' : string.digits,
         '.' : string.punctuation,
-        'x' : '012345678abcdef',
-        'X' : '012345678ABCDEF',
+        'x' : string.digits + 'abcdef',
+        'X' : string.digits + 'ABCDEF',
     }
     return classes.get(code, None)
 
